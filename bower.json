@@ -1,6 +1,6 @@
 {
-  "name": "attensys-datalayer",
-  "description": "Reusable datalayers used in different projects.",
+  "name": "attensys-datalayers",
+  "description": "Reusable data-layers used in different projects.",
   "main": [
       "assets-datalayer.html",
       "node-types-datalayer.html",
