@@ -1,0 +1,46 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/horizon-behavior/horizon-behavior.html">
+
+<!--
+`node-types-datalayer
+Data layer for node types
+
+@demo demo/index.html
+-->
+
+<dom-module id="node-types-datalayer">
+    <script>
+        Polymer({
+
+            is: 'node-types-datalayer',
+
+            behaviors: [
+                WIRSENS.HorizonBehavior
+            ],
+
+            properties: {
+                nodeTypes: {
+                    type: Array,
+                    notify: true
+                }
+            },
+
+            observers: [
+                '_setNodeTypes(_horizon)'
+            ],
+
+            _setNodeTypes: function (horizon) {
+                horizon('nodeTypes')
+                    .watch()
+                    .subscribe(function (nodeTypes) {
+                        this.set('nodeTypes', nodeTypes);
+                    }.bind(this));
+            },
+
+            update: function (data) {
+                this._horizon('nodeTypes')
+                    .update(data);
+            }
+        });
+    </script>
+</dom-module>

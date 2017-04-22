@@ -1,0 +1,70 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/horizon-behavior/horizon-behavior.html">
+
+<!--
+`seat-datalayer`
+Data layer for seats metrics
+
+@demo demo/index.html
+-->
+
+<dom-module id="seat-metric-datalayer">
+    <script>
+        Polymer({
+
+            is: 'seat-metric-datalayer',
+
+            behaviors: [
+                WIRSENS.HorizonBehavior
+            ],
+
+            properties: {
+
+                seat: Object,
+
+                lastMetric: {
+                    type: Object,
+                    notify: true
+                }
+
+            },
+
+            observers: [
+                '_setSeatMetric(_horizon, seat)'
+            ],
+
+            _setSeatMetric: function (horizon, seat) {
+                horizon('metrics').findAll({
+                    deviceId: String(seat.deviceId),
+                    entity: seat.entity
+                })
+                .order('timestamp', 'descending')
+                .limit(1)
+                .watch()
+                .subscribe(function (metric) {
+                    this.set('lastMetric', metric[0]);
+                }.bind(this));
+
+                // var seatModel = horizon.model(function (seatId, nodeType) {
+                //     return {
+                //         seatId: seatId,
+                //         seat: horizon('seats').find({ seatId: seatId }),
+                //         type: horizon('nodeTypes').find(nodeType),
+                //         lastMetric: horizon('metrics')
+                //             .findAll({ sensorId: seatId })
+                //             .order('timestamp', 'descending')
+                //             .limit(1)
+                //     }
+                // });
+
+                // seatModel(seatId, nodeType)
+                //     .watch()
+                //     .subscribe(function (seat) {
+                //         this.set('seat', seat);
+                //     }.bind(this));
+
+            }
+
+        });
+    </script>
+</dom-module>

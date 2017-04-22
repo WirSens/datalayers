@@ -1,0 +1,52 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/horizon-behavior/horizon-behavior.html">
+
+<dom-module id="scripts-datalayer">
+    <script>
+        Polymer({
+
+            is: 'scripts-datalayer',
+
+            behaviors: [
+                WIRSENS.HorizonBehavior
+            ],
+
+            properties: {
+
+                scripts: {
+                    type: Array,
+                    notify: true
+                }
+
+            },
+
+            observers: [
+                '_setScripts(_horizon)'
+            ],
+
+            _setScripts: function (horizon) {
+                horizon('scripts')
+                    .watch()
+                    .subscribe(function (scripts) {
+                        this.set('scripts', scripts);
+                    }.bind(this));
+            },
+
+            update: function (data) {
+                this._horizon('scripts')
+                    .update(data);
+            },
+
+            add: function () {
+                this._horizon('scripts').insert({
+                    name: 'new entity',
+                    script: 'return \'been there, done that\''
+                });
+            },
+
+            delete: function (id) {
+                this._horizon('scripts').remove(id);
+            }
+        });
+    </script>
+</dom-module>

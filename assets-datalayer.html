@@ -1,0 +1,71 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/horizon-behavior/horizon-behavior.html">
+
+<!--
+
+    `assets-datalayer` is a data-layer for assets.
+
+@demo demo/index.html
+-->
+
+<dom-module id="assets-datalayer">
+    <script>
+        Polymer({
+
+            is: 'assets-datalayer',
+
+            behaviors: [
+                WIRSENS.HorizonBehavior
+            ],
+
+            properties: {
+
+                assets: {
+                    type: Array,
+                    value: function () {
+                        return []
+                    },
+                    notify: true
+                }
+            },
+
+            observers: [
+                '_setAssets(_horizon)'
+            ],
+
+            upsert: function (data) {
+                this._horizon('assets').upsert(data);
+            },
+
+            add: function () {
+                this._horizon('assets').insert({
+                    name: 'new',
+                    entity: 'new',
+                    index: 0,
+                    row: 1
+                });
+            },
+
+            delete: function (seatId) {
+                this._horizon('assets').remove(seatId);
+            },
+
+            update: function (data) {
+                this._horizon('assets').update(data);
+            },
+
+            _setAssets: function (horizon) {
+                horizon('assets')
+                    .order('index')
+                    .watch()
+                    .subscribe(function(assets) {
+                        var ordered = assets.sort(function (a, b) {
+                            return String(a.index).localeCompare(String(b.index), undefined, {numeric: true, sensitivity: 'base'});
+                        });
+                        this.set('assets', ordered);
+                    }.bind(this));
+            }
+
+        });
+    </script>
+</dom-module>
