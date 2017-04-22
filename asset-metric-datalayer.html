@@ -1,0 +1,51 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/horizon-behavior/horizon-behavior.html">
+
+<!--
+`seat-datalayer`
+Data layer for seats metrics
+
+@demo demo/index.html
+-->
+
+<dom-module id="seat-metric-datalayer">
+    <script>
+        Polymer({
+
+            is: 'seat-metric-datalayer',
+
+            behaviors: [
+                WIRSENS.HorizonBehavior
+            ],
+
+            properties: {
+
+                asset: Object,
+
+                lastMetric: {
+                    type: Object,
+                    notify: true
+                }
+
+            },
+
+            observers: [
+                '_setAssetMetric(_horizon, asset)'
+            ],
+
+            _setAssetMetric: function (horizon, asset) {
+                horizon('metrics').findAll({
+                    deviceId: String(asset.deviceId),
+                    entity: asset.entity
+                })
+                .order('timestamp', 'descending')
+                .limit(1)
+                .watch()
+                .subscribe(function (metric) {
+                    this.set('lastMetric', metric[0]);
+                }.bind(this));
+            }
+
+        });
+    </script>
+</dom-module>
