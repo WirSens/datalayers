@@ -20,7 +20,7 @@ Data layer for asset metrics
 
             properties: {
 
-                asset: Object,
+                query: Object,
 
                 lastMetric: {
                     type: Object,
@@ -30,20 +30,19 @@ Data layer for asset metrics
             },
 
             observers: [
-                '_setAssetMetric(_horizon, asset)'
+                '_setLastMetric(_horizon, query)'
             ],
 
-            _setAssetMetric: function (horizon, asset) {
-                horizon('metrics').findAll({
-                    deviceId: String(asset.deviceId),
-                    entity: asset.entity
-                })
-                .order('timestamp', 'descending')
-                .limit(1)
-                .watch()
-                .subscribe(function (metric) {
-                    this.set('lastMetric', metric[0]);
-                }.bind(this));
+            _setLastMetric: function (horizon, query) {
+                horizon('metrics')
+                    .findAll(query)
+                    .order('timestamp', 'descending')
+                    .limit(1)
+                    .watch()
+                    .subscribe(function (metric) {
+                        this.set('lastMetric', metric[0]);
+                        this.fire('new-metric', metric[0]);
+                    }.bind(this));
             }
 
         });
