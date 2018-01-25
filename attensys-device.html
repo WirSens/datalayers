@@ -16,6 +16,16 @@
             ></web-socket>
         </template>
 
+        <template is="dom-if" if="[[ debug ]]">
+            <web-socket
+                json
+                auto
+                url="[[ _computeDebugUrl(device) ]]"
+                on-message="_onDebugMessage"
+                on-error="_onDebugError"
+            ></web-socket>
+        </template>
+
     </template>
     <script>
         Polymer({
@@ -28,6 +38,13 @@
                  */
                 device: {
                     type: Object,
+                    notify: true
+                },
+
+                debug: Boolean,
+
+                lastLog: {
+                    type: String,
                     notify: true
                 },
 
@@ -122,6 +139,10 @@
                     .replace('http://', 'ws://') + `/events?topic=**/${device.properties.id}/*`;
             },
 
+            _computeDebugUrl(device) {
+                return 'ws://localhost:7080/servers/attensys-gateway/events?topic=app%2F2bfe9bf0-90d2-4e10-9f86-b4366b2ea381%2Flog-messages';
+            },
+
             _onError(err) {
                 console.error(err);
             },
@@ -132,6 +153,11 @@
 
             _onMessage(event) {
                 this.set('_lastMessage', event.detail);
+            },
+
+            _onDebugMessage(event) {
+                this.set('lastLog', event.detail);
+                console.log('bug', event.detail);
             }
         });
     </script>
