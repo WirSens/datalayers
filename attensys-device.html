@@ -1,0 +1,138 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../web-socket/web-socket.html">
+<link rel="import" href="../../iron-ajax/iron-ajax.html">
+
+<dom-module id="attensys-device">
+    <template>
+
+        <template is="dom-if" if="[[ _streamsUrl ]]">
+            <web-socket
+                json
+                auto
+                url="[[ _streamsUrl ]]"
+                on-message="_onMessage"
+                on-error="_onError"
+                on-open="_onOpen"
+            ></web-socket>
+        </template>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'attensys-device',
+
+            properties: {
+
+                /**
+                 *
+                 */
+                device: {
+                    type: Object,
+                    notify: true
+                },
+
+                /**
+                 * Current state of device
+                 */
+                state: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {};
+                    }
+                },
+
+                _streams: {
+                    type: Object,
+                    notify: true,
+                    computed: '_computeStreams(device)'
+                },
+
+                _streamsUrl: {
+                    type: String,
+                    computed: '_computeStreamsUrl(device)'
+                },
+
+                _topic: String,
+
+                _lastMessage: Object
+            },
+
+            observers: [
+                '_setStateFromStreams(_lastMessage)',
+                '_setStateFromDevice(device)'
+            ],
+
+            performAction(action, payload) {
+                const deviceAction = this.device.actions
+                    .find(deviceAction => deviceAction.name === action);
+
+                const XHR = this.create('iron-ajax', {
+                    method: deviceAction.method,
+                    url: deviceAction.href,
+                    contentType: 'application/x-www-form-urlencoded',
+                    body: Object.assign({
+                        action
+                    }, this._serializePayload(payload))
+                });
+
+                XHR.generateRequest().completes
+                    .then(response => {
+                        const device = response.response;
+                        this.set('device', device);
+                    });
+            },
+
+            /**
+             * TODO figure out if zetta can do application/json
+             */
+            _serializePayload(payload) {
+                return Object.keys(payload).reduce((acc, key) => {
+                    if (typeof payload[key] === 'object') {
+                        acc[key] = JSON.stringify(payload[key]);
+                    } else {
+                        acc[key] = payload[key];
+                    }
+                    return acc;
+                }, {});
+            },
+
+            _computeStreams(device) {
+                return device.links
+                    .filter(link => link.rel.includes('monitor'))
+                    .map(link => ({
+                        name: link.title
+                    }));
+            },
+
+            _setStateFromDevice(device) {
+                this.set('state', device.properties);
+            },
+
+            _setStateFromStreams(message) {
+                const key = message.topic.split('/')[2];
+                const value = message.data;
+                this.set('state.' + key, value);
+            },
+
+            _computeStreamsUrl(device) {
+                return device.links
+                    .find(link => link.rel.includes('up'))
+                    .href
+                    .replace('http://', 'ws://') + `/events?topic=**/${device.properties.id}/*`;
+            },
+
+            _onError(err) {
+                console.error(err);
+            },
+
+            _onOpen(event) {
+                console.log('opened');
+            },
+
+            _onMessage(event) {
+                this.set('_lastMessage', event.detail);
+            }
+        });
+    </script>
+</dom-module>

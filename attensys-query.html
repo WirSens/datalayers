@@ -1,0 +1,75 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../web-socket/web-socket.html">
+
+<dom-module id="attensys-query">
+
+    <template>
+
+        <web-socket
+            json
+            auto
+            url="[[ _url ]]"
+            on-message="_onMessage"
+            on-error="_onError"
+            on-open="_onOpen"
+        ></web-socket>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'attensys-query',
+            properties: {
+
+                host: String,
+
+                query: String,
+
+                devices: {
+                    type: Array,
+                    notify: true,
+                    value: () => []
+                },
+
+                hasDevices: {
+                    type: Boolean,
+                    computed: '_computeHasDevices(devices.*)'
+                },
+
+                _url: {
+                    type: String,
+                    computed: '_computeUrl(host, query)'
+                }
+            },
+
+            _computeUrl(host, query) {
+                const encodedQuery = encodeURI(query.replace(/'/g, '"'));
+                return `ws://${host}/events?topic=query%2F${encodedQuery}`;
+            },
+
+            _computeHasDevices(devicesInfo) {
+                return devicesInfo.base.length > 0;
+            },
+
+            _onMessage(event) {
+                const deviceIndex = this.devices.findIndex(
+                    device => device.properties.id === event.detail.properties.id
+                );
+
+                if (deviceIndex !== -1) {
+                    this.set('devices.' + deviceIndex, event.detail);
+                } else {
+                    this.push('devices', event.detail);
+                }
+            },
+
+            _onOpen(event) {
+                console.log(`opened: ${this._url}`);
+            },
+
+            _onError(event) {
+                console.error(event.detail);
+            }
+        });
+    </script>
+</dom-module>

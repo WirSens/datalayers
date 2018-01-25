@@ -2,14 +2,15 @@
   "name": "attensys-datalayers",
   "description": "Reusable data-layers used in different projects.",
   "main": [
-      "assets-datalayer.html",
-      "node-types-datalayer.html",
-      "scripts-datalayer.html",
-      "asset-metric-datalayer.html"
+    "assets-datalayer.html",
+    "node-types-datalayer.html",
+    "scripts-datalayer.html",
+    "asset-metric-datalayer.html"
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
-    "horizon-behavior": "wirsens/horizon-behavior"
+    "horizon-behavior": "wirsens/horizon-behavior",
+    "web-socket": "*"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
